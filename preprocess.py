@@ -44,6 +44,7 @@ if __name__ == '__main__':
 
     # Concatenate the original DataFrame with the new DataFrame of volumes
     result_df = pd.concat([df.drop(columns=['Volumes']), volumes_df], axis=1)
+    result_df.to_csv('dataset/consumption-1y-processed.csv', sep=';', index=False)
 
     # Print the final DataFrame
     print(result_df.info())
