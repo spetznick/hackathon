@@ -1,7 +1,11 @@
+import numpy as np
 import pandas as pd
 import json
 from io import StringIO
 import sklearn.model_selection
+import torch
+
+test = False
 
 # Sample data
 data = """Id;End;Start;Volumes
@@ -35,16 +39,48 @@ def create_datasplit(df):
     return train_df, test_df, val_df
 
 
+def compute_simultaneity(user1_timeries: np.ndarray, user2_timeries: np.ndarray) -> np.ndarray:
+    """
+    Compute the simultaneity between two users based on their time series data.
+    Args:
+        user1_timeries (np.ndarray): Time series data for user 1
+        user2_timeries (np.ndarray): Time series data for user 2
+    Returns:
+        np.ndarray: Simultaneity score for user 1
+
+    >>> u1 = np.array([4,2,4])
+    >>> u2 = np.array([0,50,50])
+    >>> compute_simultaneity(u1, u2)
+    0.6
+    >>> np.allclose(compute_simultaneity(u2, u1), 0.06)
+    True
+    """
+    # Compute the correlation between the two time series
+    sum_user1 = np.sum(user1_timeries)
+    sum_of_max = np.sum(np.maximum(user1_timeries - user2_timeries, 0))
+    simultaneity_score = 1 - sum_of_max/sum_user1
+    return simultaneity_score
+
+
+def compute_and_store_simultaneity_scores(df: pd.DataFrame):
+    pass
+
+
 if __name__ == '__main__':
-    # Apply the function to the Volumes column
-    df['Volumes'] = df['Volumes'].apply(parse_volumes)
+    if test:
+        import doctest
+        doctest.testmod()
+    # # Apply the function to the Volumes column
+    # df['Volumes'] = df['Volumes'].apply(parse_volumes)
 
-    # Create a DataFrame from the 'Volumes' dictionaries
-    volumes_df = df['Volumes'].apply(pd.Series)
+    # # Create a DataFrame from the 'Volumes' dictionaries
+    # volumes_df = df['Volumes'].apply(pd.Series)
 
-    # Concatenate the original DataFrame with the new DataFrame of volumes
-    result_df = pd.concat([df.drop(columns=['Volumes']), volumes_df], axis=1)
+    # # Concatenate the original DataFrame with the new DataFrame of volumes
+    # result_df = pd.concat([df.drop(columns=['Volumes']), volumes_df], axis=1)
 
-    # Print the final DataFrame
-    print(result_df.info())
-    print(result_df.head())
+    # # Print the final DataFrame
+    # print(result_df.info())
+    # print(result_df.head())
+
+    # _, _, _ = create_datasplit(result_df)
