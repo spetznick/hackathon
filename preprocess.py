@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     # Read the CSV data
     # filename = StringIO(data)
-    # filename = 'dataset/production-1y.csv'
+    # filename = 'dataset/consumption-3y.csv'
     # df = pd.read_csv(filename, sep=';', usecols=["Id", "Volumes"])
 
     # # Apply the function to the Volumes column
@@ -125,7 +125,7 @@ if __name__ == '__main__':
 
     # # Concatenate the original DataFrame with the new DataFrame of volumes
     # producer_df = pd.concat([df.drop(columns=['Volumes']), volumes_df], axis=1)
-    # producer_df.to_csv('dataset/production-1y-processed.csv', sep=';', index=False)
+    # producer_df.to_csv('dataset/consumption-3y-processed.csv', sep=';', index=False)
 
     # # Print the final DataFrame
     # print(producer_df.info())
