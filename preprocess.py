@@ -105,6 +105,27 @@ def compute_and_store_simultaneity_scores(df_consumers: pd.DataFrame, df_produce
     return df_simultaneity
 
 
+def best_matches(ids: list, scores: pd.DataFrame) -> pd.DataFrame:
+    """Find the best matches for each consumer based on the joint score.
+
+    Args:
+        ids (list): List of consumer ids
+        scores (pd.DataFrame): DataFrame containing the simultaneity scores
+    Returns:
+        pd.DataFrame: DataFrame containing the best matches for each consumer
+    """
+    # Initialize the DataFrame to store the best matches
+    best_matches = []
+
+    # Iterate over the consumer ids to find the best matches
+    for consumer_id in ids:
+        # Filter the scores for the current consumer
+        consumer_scores = scores[(scores['consumerid'] == consumer_id)]
+        # Find the best match based on the joint score
+        best_match = consumer_scores.loc[consumer_scores['jointScore'].idxmax()]
+        best_matches.append(best_match)
+
+    return pd.DataFrame(best_matches)
 
 
 if __name__ == '__main__':
