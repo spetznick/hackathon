@@ -24,29 +24,11 @@ class Model(ABC):
 
 class TimeseriesClusteringModel(Model):
     """Model based on the timeseries cluseting to predict the 10 most likely consumers and producers for a given producer and consumer respectively."""
-    def __init__(self, consumers, producers, consumer_clustering, consumer_scaler, producer_clustering, producer_scaler, df_representatives) -> None:
-        self.consumers = consumers
-        self.producers = producers
-        self.consumer_clustering = consumer_clustering
-        self.consumer_scaler = consumer_scaler
-        self.producer_clustering = producer_clustering
-        self.producer_scaler = producer_scaler
+    def __init__(self, df_consumers, df_producers, df_representatives, sumsample_size=10) -> None:
+        self.df_consumers = df_consumers
+        self.df_producers = df_producers
         self.df_representatives = df_representatives
-        self.subsample_size = 10
-
-    def _predict_cluster(self, df_timeseries: pd.DataFrame, consumer_clustering: bool):
-        if consumer_clustering:
-            cluster_model = self.consumer_clustering
-            scaler = self.consumer_scaler
-        else:
-            cluster_model = self.producer_clustering
-            scaler = self.producer_scaler
-
-        data = df_timeseries.iloc[0, :].to_numpy()
-        ts_data = to_time_series_dataset(data)
-        ts_scaled = scaler.fit_transform(ts_data)
-        cluster = cluster_model.predict(ts_scaled)
-        return cluster
+        self.subsample_size = sumsample_size
 
 
     def _compare_with_clusters(self, df_timeseries: pd.DataFrame, consumer_to_producer: bool) -> Iterable[tuple[int, int, float]]:
@@ -68,11 +50,11 @@ class TimeseriesClusteringModel(Model):
 
     def _compare_within_cluster(self, user_id: int, cluster: int, num_samples: int, consumer_to_producer: bool) -> Iterable[tuple[int, int, float]]:
         if consumer_to_producer:
-            df_timeseries = self.consumers[self.consumers.index == user_id]
-            df_compare_to = self.producers
+            df_timeseries = self.df_consumers[self.df_consumers.index == user_id]
+            df_compare_to = self.df_producers
         else:
-            df_timeseries = self.producers[self.producers.index == user_id]
-            df_compare_to = self.consumers
+            df_timeseries = self.df_producers[self.df_producers.index == user_id]
+            df_compare_to = self.df_consumers
         # Select rows that belong to the cluster
         df_cluster = df_compare_to[df_compare_to["cluster"] == cluster]
         users_to_compare_to = df_cluster.sample(num_samples, replace=False)
@@ -85,14 +67,14 @@ class TimeseriesClusteringModel(Model):
         return scores
 
     def predict_consumers(self, producer_id: int) -> Iterable[tuple[int, float]]:
-        cluster_scores = self._compare_with_clusters(self.producers[self.producers.index == producer_id], consumer_to_producer=False)
+        cluster_scores = self._compare_with_clusters(self.df_producers[self.df_producers.index == producer_id], consumer_to_producer=False)
         cluster = cluster_scores[0][0]
         scores = self._compare_within_cluster(producer_id, cluster, self.subsample_size, consumer_to_producer=False)
         return scores
 
 
     def predict_producers(self, consumer_id: int) -> Iterable[tuple[int, float]]:
-        cluster_scores = self._compare_with_clusters(self.producers[self.producers.index == consumer_id], consumer_to_producer=True)
+        cluster_scores = self._compare_with_clusters(self.df_producers[self.df_producers.index == consumer_id], consumer_to_producer=True)
         cluster = cluster_scores[0][0]
         scores = self._compare_within_cluster(consumer_id, cluster, self.subsample_size, consumer_to_producer=True)
         return scores
