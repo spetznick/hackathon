@@ -89,3 +89,4 @@ class DummyModel:
 if __name__ == "__main__":
     precompute_evaluation_data("-1y-processed")
     print(evaluate_model(DummyModel()))
+
