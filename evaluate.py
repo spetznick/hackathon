@@ -7,7 +7,7 @@ from dataclasses import dataclass
 def precompute_evaluation_data(file_suffix: str):
     """Precompute evaluation data for the test set. file_suffix is what comes after 'consumption' or 'production' but before the file extension"""
     # Load the test set
-    df_consumer = pd.read_csv(f"dataset/consumption{file_suffix}.csv", sep=',')
+    df_consumer = pd.read_csv(f"dataset/consumption{file_suffix}.csv", sep=';')
     df_producer = pd.read_csv(f"dataset/production{file_suffix}.csv", sep=';')
 
     c_test_set, c_train_set, c_val_set = preprocess.create_datasplit(df_consumer)
@@ -88,5 +88,5 @@ class DummyModel(Model):
 
 
 if __name__ == "__main__":
-    # precompute_evaluation_data("-1y-processed")
-    print(evaluate_model(DummyModel()))
+    precompute_evaluation_data("-1y-processed")
+    # print(evaluate_model(DummyModel()))
