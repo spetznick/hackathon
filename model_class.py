@@ -5,7 +5,7 @@ import numpy as np
 from tslearn.utils import to_time_series_dataset
 import preprocess
 import pickle
-
+import evaluate
 
 class Model(ABC):
     """Model that can take in 1 producer and give id of 10 consumers that are most likely to consume the energy produced by the producer. And take in 1 consumer and give id of 10 producers that are most likely to produce the energy consumed by the consumer."""
@@ -34,15 +34,19 @@ class TimeseriesClusteringModel(Model):
 
     def _compare_with_clusters(self, df_timeseries: pd.DataFrame, consumer_to_producer: bool) -> Iterable[tuple[int, int, float]]:
         if consumer_to_producer:
+            df_compare_to = self.df_producers
             ids_representatives = self.df_representatives["representative_ids_production1y"]
             representatives = self.df_representatives["representative_ids_production1y"]
         else:
+            df_compare_to = self.df_consumers
             ids_representatives = self.df_representatives["representative_ids_consumption1y"]
             representatives = self.df_representatives["representatives_consumption1y"]
 
         scores = []
         for idx, representative in enumerate(representatives):
-            score = preprocess.compute_joint_score(df_timeseries.iloc[0,:].to_numpy(), representative.iloc[idx, :].to_numpy())
+            # Acces timeseries of the representative
+            score = preprocess.compute_joint_score(df_timeseries.iloc[0,1:-1].to_numpy(),
+                                                   df_compare_to[df_compare_to["Id"] == representative][0,1:-1].to_numpy())
             # id of cluster, id of representative, score
             scores.append((idx, ids_representatives.iloc[idx], score))
         scores.sort(key=lambda x: x[2], reverse=True)
@@ -51,31 +55,31 @@ class TimeseriesClusteringModel(Model):
 
     def _compare_within_cluster(self, user_id: int, cluster: int, num_samples: int, consumer_to_producer: bool) -> Iterable[tuple[int, int, float]]:
         if consumer_to_producer:
-            df_timeseries = self.df_consumers[self.df_consumers.index == user_id]
+            df_timeseries = self.df_consumers[self.df_consumers["Id"] == user_id]
             df_compare_to = self.df_producers
         else:
-            df_timeseries = self.df_producers[self.df_producers.index == user_id]
+            df_timeseries = self.df_producers[self.df_producers["Id"] == user_id]
             df_compare_to = self.df_consumers
         # Select rows that belong to the cluster
         df_cluster = df_compare_to[df_compare_to["cluster"] == cluster]
         users_to_compare_to = df_cluster.sample(num_samples, replace=False)
         scores = []
         for idx, user in users_to_compare_to.iterrows():
-            score = preprocess.compute_joint_score(df_timeseries.iloc[0,:].to_numpy(), user.to_numpy())
+            score = preprocess.compute_joint_score(df_timeseries.iloc[0,1:-1].to_numpy(), user.iloc[0,1:-1].to_numpy())
             # id of cluster, id of representative, score
             scores.append((idx, score))
         scores.sort(key=lambda x: x[1], reverse=True)
         return scores
 
     def predict_consumers(self, producer_id: int) -> Iterable[tuple[int, float]]:
-        cluster_scores = self._compare_with_clusters(self.df_producers[self.df_producers.index == producer_id], consumer_to_producer=False)
+        cluster_scores = self._compare_with_clusters(self.df_producers[self.df_producers["Id"] == producer_id], consumer_to_producer=False)
         cluster = cluster_scores[0][0]
         scores = self._compare_within_cluster(producer_id, cluster, self.subsample_size, consumer_to_producer=False)
         return scores
 
 
     def predict_producers(self, consumer_id: int) -> Iterable[tuple[int, float]]:
-        cluster_scores = self._compare_with_clusters(self.df_producers[self.df_producers.index == consumer_id], consumer_to_producer=True)
+        cluster_scores = self._compare_with_clusters(self.df_producers[self.df_producers["Id"] == consumer_id], consumer_to_producer=True)
         cluster = cluster_scores[0][0]
         scores = self._compare_within_cluster(consumer_id, cluster, self.subsample_size, consumer_to_producer=True)
         return scores
@@ -87,3 +91,4 @@ if __name__ == "__main__":
         df_representatives = pickle.load(f)
 
     model = TimeseriesClusteringModel(df_consumers, df_producers, df_representatives)
+    print(evaluate.evaluate_model(model))
