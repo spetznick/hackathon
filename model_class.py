@@ -46,7 +46,7 @@ class TimeseriesClusteringModel(Model):
         for idx, representative in enumerate(representatives):
             # Acces timeseries of the representative
             score = preprocess.compute_joint_score(df_timeseries.iloc[0,1:-1].to_numpy(),
-                                                   df_compare_to[df_compare_to["Id"] == representative][0,1:-1].to_numpy())
+                                                   df_compare_to[df_compare_to["Id"] == representative].iloc[0,1:-1].to_numpy())
             # id of cluster, id of representative, score
             scores.append((idx, ids_representatives.iloc[idx], score))
         scores.sort(key=lambda x: x[2], reverse=True)
@@ -61,11 +61,14 @@ class TimeseriesClusteringModel(Model):
             df_timeseries = self.df_producers[self.df_producers["Id"] == user_id]
             df_compare_to = self.df_consumers
         # Select rows that belong to the cluster
-        df_cluster = df_compare_to[df_compare_to["cluster"] == cluster]
-        users_to_compare_to = df_cluster.sample(num_samples, replace=False)
+        df_cluster = df_compare_to[df_compare_to["Cluster"] == cluster]
+        if len(df_cluster) < num_samples:
+            users_to_compare_to = df_cluster
+        else:
+            users_to_compare_to = df_cluster.sample(num_samples, replace=False)
         scores = []
         for idx, user in users_to_compare_to.iterrows():
-            score = preprocess.compute_joint_score(df_timeseries.iloc[0,1:-1].to_numpy(), user.iloc[0,1:-1].to_numpy())
+            score = preprocess.compute_joint_score(df_timeseries.iloc[0,1:-1].to_numpy(), user.iloc[1:-1].to_numpy())
             # id of cluster, id of representative, score
             scores.append((idx, score))
         scores.sort(key=lambda x: x[1], reverse=True)

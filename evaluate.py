@@ -1,13 +1,12 @@
 import preprocess
 import pandas as pd
 from typing import Iterable
-from model_class import Model
 from dataclasses import dataclass
 
 def precompute_evaluation_data(file_suffix: str):
     """Precompute evaluation data for the test set. file_suffix is what comes after 'consumption' or 'production' but before the file extension"""
     # Load the test set
-    df_consumer = pd.read_csv(f"dataset/consumption{file_suffix}.csv", sep=',')
+    df_consumer = pd.read_csv(f"dataset/consumption{file_suffix}.csv", sep=';')
     df_producer = pd.read_csv(f"dataset/production{file_suffix}.csv", sep=';')
 
     c_test_set, c_train_set, c_val_set = preprocess.create_datasplit(df_consumer)
@@ -26,7 +25,7 @@ class EvaluationResult:
     average_joint_score_producers: float
 
 
-def evaluate_model(model: Model):
+def evaluate_model(model):
     file_suffix = "-1y-processed"
     # Load the test set
     consumer_evaluation = pd.read_csv(f"dataset/consumer-evaluation{file_suffix}.csv", sep=',')
@@ -46,7 +45,7 @@ def evaluate_model(model: Model):
 
         # Calculate the number of correct predictions
         for producer_id, joint_score in predictions:
-            average_joint_score += joint_score 
+            average_joint_score += joint_score
             if producer_id in actual_top_10:
                 avg_correct_predictions += 1
     avg_correct_predictions /= len(consumer_indices)
@@ -66,18 +65,18 @@ def evaluate_model(model: Model):
 
         # Calculate the number of correct predictions
         for consumer_id, joint_score in predictions:
-            average_joint_score_producer += joint_score 
+            average_joint_score_producer += joint_score
             if consumer_id in actual_top_10:
                 avg_correct_consumer_prodictions += 1
     avg_correct_consumer_prodictions /= len(producer_indices)
     average_joint_score_producer /= 10 * len(producer_indices)
-    
+
 
     return EvaluationResult(avg_correct_consumer_prodictions, average_joint_score_producer, avg_correct_predictions, average_joint_score)
 
-    
 
-class DummyModel(Model):
+
+class DummyModel:
 
     def predict_consumers(self, producer_id: int) -> Iterable[tuple[int, float]]:
         # return [(1, 0.5), (2, 0.4), (3, 0.3), (3, 0.2), (2, 0.1), (2, 0.1), (2, 0.1), (2, 0.1), (2, 0.1), (2, 0.1)]
@@ -88,5 +87,5 @@ class DummyModel(Model):
 
 
 if __name__ == "__main__":
-    # precompute_evaluation_data("-1y-processed")
+    precompute_evaluation_data("-1y-processed")
     print(evaluate_model(DummyModel()))
