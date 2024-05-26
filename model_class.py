@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from tslearn.utils import to_time_series_dataset
 import preprocess
+import pickle
 
 
 class Model(ABC):
@@ -78,3 +79,11 @@ class TimeseriesClusteringModel(Model):
         cluster = cluster_scores[0][0]
         scores = self._compare_within_cluster(consumer_id, cluster, self.subsample_size, consumer_to_producer=True)
         return scores
+
+if __name__ == "__main__":
+    df_consumers = pd.read_csv('clustered_consumers.csv')
+    df_producers = pd.read_csv('clustered_producers.csv')
+    with open("models/representatives_df.pkl", 'rb') as f:
+        df_representatives = pickle.load(f)
+
+    model = TimeseriesClusteringModel(df_consumers, df_producers, df_representatives)
