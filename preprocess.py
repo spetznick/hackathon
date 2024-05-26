@@ -95,9 +95,9 @@ def compute_and_store_simultaneity_scores(df_consumers: pd.DataFrame, df_produce
 
     # Iterate over the consumers and producers to compute the simultaneity scores
     for c_row_id, consumer in df_consumers.iterrows():
-        consumer_id = consumer['Id']
+        consumer_id = int(consumer['Id'])
         for p_row_id, producer in df_producers.iterrows():
-            producer_id = producer['Id']
+            producer_id = int(producer['Id'])
             if producer_id == consumer_id:
                 continue
             # Compute the simultaneity scores
