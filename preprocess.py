@@ -57,7 +57,7 @@ def compute_simultaneity(user1_timeries: np.ndarray, user2_timeries: np.ndarray)
     # Compute the correlation between the two time series
     sum_user1 = np.sum(user1_timeries)
     sum_of_max = np.sum(np.maximum(user1_timeries - user2_timeries, 0))
-    simultaneity_score = 1 - sum_of_max/sum_user1
+    simultaneity_score = 1 - sum_of_max/(sum_user1 + 0.000001)
     return simultaneity_score
 
 
