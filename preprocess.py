@@ -60,6 +60,7 @@ def compute_simultaneity(user1_timeries: np.ndarray, user2_timeries: np.ndarray)
     simultaneity_score = 1 - sum_of_max/(sum_user1 + 0.000001)
     return simultaneity_score
 
+
 def compute_joint_score(user1_timeries: np.ndarray, user2_timeries: np.ndarray) -> np.ndarray:
     """Compute the simultaneity scores between two users based on their time series data.
     """

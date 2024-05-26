@@ -10,7 +10,9 @@ if __name__ == "__main__":
 
     # Load the scaler
     # Load the model
+
     # Load the representatives of the clusters
     # Run pipeline on validation set
+
     # Evaluate the model
     # Compare with the precomputed simultaneity scores
