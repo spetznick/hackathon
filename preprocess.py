@@ -60,6 +60,14 @@ def compute_simultaneity(user1_timeries: np.ndarray, user2_timeries: np.ndarray)
     simultaneity_score = 1 - sum_of_max/sum_user1
     return simultaneity_score
 
+def compute_joint_score(user1_timeries: np.ndarray, user2_timeries: np.ndarray) -> np.ndarray:
+    """Compute the simultaneity scores between two users based on their time series data.
+    """
+    score1 = compute_simultaneity(user1_timeries, user2_timeries)
+    score2 = compute_simultaneity(user2_timeries, user1_timeries)
+    joint_score = score1 + score2 - np.abs(score1 - score2)
+    return joint_score
+
 
 def compute_and_store_simultaneity_scores(df_consumers: pd.DataFrame, df_producers: pd.DataFrame, filename=None) -> pd.DataFrame:
     """Compute the simultaneity scores between consumers and producers based on their time series data.
@@ -93,7 +101,7 @@ def compute_and_store_simultaneity_scores(df_consumers: pd.DataFrame, df_produce
             # Compute the simultaneity scores
             score_c2p = compute_simultaneity(consumer, producer)
             score_p2c = compute_simultaneity(producer, consumer)
-            joint_score = score_c2p + score_p2c - abs(score_c2p - score_p2c)
+            joint_score = score_c2p + score_p2c - np.abs(score_c2p - score_p2c)
 
             # Store the scores in the DataFrame
             entries.append({'consumerid': consumer_id, 'producerid': producer_id,
