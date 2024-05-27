@@ -76,7 +76,6 @@ def evaluate_model(model):
     return EvaluationResult(avg_correct_consumer_prodictions, average_joint_score_producer, avg_correct_predictions, average_joint_score)
 
 
-
 class DummyModel:
 
     def predict_consumers(self, producer_id: int) -> Iterable[tuple[int, float]]:

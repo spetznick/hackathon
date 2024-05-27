@@ -46,7 +46,7 @@ class TimeseriesClusteringModel(Model):
         for idx, representative in enumerate(representatives):
             # Acces timeseries of the representative
             score = preprocess.compute_joint_score(df_timeseries.iloc[0,1:-1].to_numpy(),
-                                                   representative)
+                                                   df_compare_to[df_compare_to["Id"] == representative].iloc[0,1:-1].to_numpy())
             # id of cluster, id of representative, score
             scores.append((idx, ids_representatives.iloc[idx], score))
         scores.sort(key=lambda x: x[2], reverse=True)
