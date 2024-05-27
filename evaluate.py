@@ -56,6 +56,7 @@ def evaluate_model(model):
     avg_correct_consumer_prodictions = 0
     average_joint_score_producer = 0
 
+    last_producer_id = 0
     for producer_id in producer_indices:
         # Get the 10 most likely consumers
         predictions = model.predict_consumers(producer_id)

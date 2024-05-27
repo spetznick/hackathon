@@ -36,7 +36,7 @@ class TimeseriesClusteringModel(Model):
         if consumer_to_producer:
             df_compare_to = self.df_producers
             ids_representatives = self.df_representatives["representative_ids_production1y"]
-            representatives = self.df_representatives["representative_ids_production1y"]
+            representatives = self.df_representatives["representatives_production1y"]
         else:
             df_compare_to = self.df_consumers
             ids_representatives = self.df_representatives["representative_ids_consumption1y"]
@@ -46,7 +46,7 @@ class TimeseriesClusteringModel(Model):
         for idx, representative in enumerate(representatives):
             # Acces timeseries of the representative
             score = preprocess.compute_joint_score(df_timeseries.iloc[0,1:-1].to_numpy(),
-                                                   df_compare_to[df_compare_to["Id"] == representative].iloc[0,1:-1].to_numpy())
+                                                   representative)
             # id of cluster, id of representative, score
             scores.append((idx, ids_representatives.iloc[idx], score))
         scores.sort(key=lambda x: x[2], reverse=True)
@@ -82,7 +82,7 @@ class TimeseriesClusteringModel(Model):
 
 
     def predict_producers(self, consumer_id: int) -> Iterable[tuple[int, float]]:
-        cluster_scores = self._compare_with_clusters(self.df_producers[self.df_producers["Id"] == consumer_id], consumer_to_producer=True)
+        cluster_scores = self._compare_with_clusters(self.df_consumers[self.df_consumers["Id"] == consumer_id], consumer_to_producer=True)
         cluster = cluster_scores[0][0]
         scores = self._compare_within_cluster(consumer_id, cluster, self.subsample_size, consumer_to_producer=True)
         return scores
